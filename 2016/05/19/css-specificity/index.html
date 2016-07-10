@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="zh-CN,en,default"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="A legendary army."><title>简述CSS优先级 | Crusade</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/4.1.1/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.2/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">简述CSS优先级</h1><a id="logo" href="/.">Crusade</a><p class="description">For honor!</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">简述CSS优先级</h1><div class="post-meta">May 19, 2016<span> | </span><span class="category"><a href="/categories/Front-End/">Front End</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> Hits</span></span></div><a data-disqus-identifier="2016/05/19/css-specificity/" href="/2016/05/19/css-specificity/#disqus_thread" class="disqus-comment-count"></a><div class="post-content"><p>CSS的样式可以以多种方式指定，在最终渲染的时候，浏览器依照什么顺序应用样式一直是一个非常令人头疼的问题。本文尝试以最简单的例子来解释CSS的优先级。</p>
+<h2 id="CSS定义的位置"><a href="#CSS定义的位置" class="headerlink" title="CSS定义的位置"></a>CSS定义的位置</h2><p>一般来说，有以下几个位置定义元素CSS的样式：</p>
+<ol>
+<li><strong>浏览器默认</strong>：未指定样式时，浏览器为元素CSS样式设置的默认值。</li>
+<li><strong>外部样式表</strong>：使用<code>&lt;link&gt;</code>标签导入的外部css文件。例如： <figure class="highlight html"><figcaption><span>内部样式表</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"example.css"</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    </span><br></pre></td></tr></table></figure></li>
+<li><strong>内部样式表</strong>：指在head部分通过<code>&lt;style&gt;</code>标签定义的样式。例如： <figure class="highlight html"><figcaption><span>内部样式表</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="css"></span><br><span class="line">    <span class="selector-tag">body</span> &#123;<span class="attribute">background-color</span>: red&#125;</span><br><span class="line">    <span class="selector-tag">p</span> &#123;<span class="attribute">margin-left</span>: <span class="number">20px</span>&#125;</span><br><span class="line"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line">    </span><br></pre></td></tr></table></figure></li>
+<li><strong>内联样式</strong>：指定义在标签的style属性里的样式。例如： <figure class="highlight html"><figcaption><span>内联样式</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">style</span>=<span class="string">"color: red; margin-left: 20px"</span>&gt;</span></span><br><span class="line">    This is a paragraph</span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>其中4拥有最高的优先级，2和3拥有相同的优先级，1的优先级最低。相同优先级的样式应用最后出现的样式定义。实质上，所有定义的样式，最后都会被级联（cascade）到页面中，那么，这时候样式的优先级如何决定呢？</p>
+<h2 id="CSS的优先级"><a href="#CSS的优先级" class="headerlink" title="CSS的优先级"></a>CSS的优先级</h2><p>最新的CSS2.2的<a href="https://www.w3.org/TR/CSS22/cascade.html#specificity" title="css2.2 spec" target="_blank" rel="external">Spec</a>对优先级有如下定义：</p>
+<blockquote>
+<p>A selector’s specificity is calculated as follows:</p>
+<ul>
+<li>count 1 if the declaration is from is a ‘style’ attribute rather than a rule with a selector, 0 otherwise (= a) (In HTML, values of an element’s “style” attribute are style sheet rules. These rules have no selectors, so a=1, b=0, c=0, and d=0.)</li>
+<li>count the number of ID attributes in the selector (= b)</li>
+<li>count the number of other attributes and pseudo-classes in the selector (= c)</li>
+<li>count the number of element names and pseudo-elements in the selector (= d)</li>
+</ul>
+<p>The specificity is based only on the form of the selector. In particular, a selector of the form “[id=p33]” is counted as an attribute selector (a=0, b=0, c=1, d=0), even if the id attribute is defined as an “ID” in the source document’s DTD.</p>
+<p>Concatenating the four numbers a-b-c-d (in a number system with a large base) gives the specificity.</p>
+</blockquote>
+<p>简单的来讲，CSS的优先级就是一系列的计数运算。这个最终的优先级有4位：abcd。</p>
+<ul>
+<li>如果是在元素的style属性里定义的样式，则a取1，否则取0</li>
+<li>b的取值为样式定义里有多少id选择器（如：<code>#example</code>）</li>
+<li>c的取值为样式定义有多少属性选择器（如<code>[pro=example]</code>）、类选择器（如：<code>.example</code>）或者伪类选择器（如：<code>:link</code>）</li>
+<li>d的取值为样式里有多少元素名（如：<code>div</code>）或者伪元素（如：<code>:first-line</code>）</li>
+</ul>
+<p>最后优先级取值由上述abcd的值决定。在应用样式时，会依次比较样式的a、b、c、d的值，并应用值较大的。有一点必须要注意的是，id选择器必须使用id选择器样式，也就是<code>#example</code>才能算做b类，如果使用诸如<code>[id=example]</code>的属性选择器的方式，只能算做c类。</p>
+<h2 id="具体实例"><a href="#具体实例" class="headerlink" title="具体实例"></a>具体实例</h2><iframe scrolling="no" width="100%" height="300" src="http://jsfiddle.net/86pgphvv/embedded/html,css,result/light" frameborder="0" allowfullscreen></iframe>
+<p>p元素有id、class和data属性。三个css样式的优先级计算如下表：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>css</th>
+<th>abcd</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>p { color: red; }</code></td>
+<td>0001</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>p.example-class { color: green; }</code></td>
+<td>0010</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>p[data=example-data] { color: blue; }</code></td>
+<td>0010</td>
+</tr>
+</tbody>
+</table>
+<p>可见2和3拥有相同的优先级，但是3在2之后定义，因此3会被应用，该段落是蓝色的。</p>
+<iframe scrolling="no" width="100%" height="300" src="http://jsfiddle.net/t6ygmef8/embedded/html,css,result/light" frameborder="0" allowfullscreen></iframe>
+<p>p元素内嵌了一个span元素。三个css样式的优先级计算如下表：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>css</th>
+<th>abcd</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>#pid #sid { color: red; }</code></td>
+<td>0200</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>#pid span { color: green; }</code></td>
+<td>0101</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>span.sclass#sid { color: blue; }</code></td>
+<td>0111</td>
+</tr>
+</tbody>
+</table>
+<p>优先级顺序为1&gt;2&gt;3因此，example最后是红色的。</p>
+<h2 id="关于-important"><a href="#关于-important" class="headerlink" title="关于!important"></a>关于!important</h2><p>在样式定义的分号之前加入!important会使强制覆盖掉之前的样式。如果!important被用在了同一元素的同一样式定义，那么会应用最后!important所定义的样式。</p>
+<iframe scrolling="no" width="100%" height="300" src="http://jsfiddle.net/h40ytjzL/embedded/html,css,result/light" frameborder="0" allowfullscreen></iframe>
+<p>尽管2号样式使用了多个id选择器、类选择器和标签选择器，并且span标签也有自己的内联样式，但是1号样式使用了!important，强制覆盖了其余样式。因此，example的颜色是红色的。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CSS的优先级计算其实就是一系列简单的计数操作。相信在掌握了基本的原理之后，在写前端样式时会节省大量的时间，更加得心应手。</p>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://www.sean-lan.com/2016/05/19/css-specificity/" data-id="ciqg16gmj00057ounbp2av4h3" class="article-share-link">分享到</a><div class="tags"><a href="/tags/CSS/">CSS</a></div><div class="post-nav"><a href="/2016/05/23/scroll-to-top/" class="pre">滚到到页面顶端(Scroll To Top)的简单实现</a></div><div id="disqus_thread"><script>var disqus_shortname = 'uniquelanxiang';
+var disqus_identifier = '2016/05/19/css-specificity/';
+var disqus_title = '简述CSS优先级';
+var disqus_url = 'http://www.sean-lan.com/2016/05/19/css-specificity/';
+(function() {
+  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//uniquelanxiang.disqus.com/count.js" async></script></div></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://www.sean-lan.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Front-End/">Front End</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile-Application/">Mobile Application</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/Android/" style="font-size: 15px;">Android</a> <a href="/tags/JavaScript/" style="font-size: 15px;">JavaScript</a> <a href="/tags/CSS/" style="font-size: 15px;">CSS</a> <a href="/tags/React/" style="font-size: 15px;">React</a> <a href="/tags/webpack/" style="font-size: 15px;">webpack</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/07/04/android-permissions/">Working with Android System Permissions</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/06/21/react-project-template-using-webpack/">React Template Project Using webpack</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/05/23/scroll-to-top/">滚到到页面顶端(Scroll To Top)的简单实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/05/19/css-specificity/">简述CSS优先级</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-comment-o"> 最近评论</i></div><script type="text/javascript" src="//uniquelanxiang.disqus.com/recent_comments_widget.js?num_items=5&amp;hide_avatars=1&amp;avatar_size=32&amp;excerpt_length=20&amp;hide_mods=1"></script></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.shinexu.com/" title="Vesion" target="_blank">Vesion</a><ul></ul><a href="http://rationaldesign.studio/" title="Rational Design" target="_blank">Rational Design</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">© <a href="/." rel="nofollow">Crusade.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="/css/jquery.fancybox.css?v=0.0.0"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?7a1d7b5bb01512fff50895f7b6558c95";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+</script><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
