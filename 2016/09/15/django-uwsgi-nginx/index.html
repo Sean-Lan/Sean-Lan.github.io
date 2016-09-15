@@ -17,7 +17,7 @@
 <li>Install <code>django</code> and <code>uwsgi</code>: <code>pip install django uwsgi</code>.</li>
 <li>It’s better to use a <code>requirements.txt</code> file to log all the packages needed in the project: <code>pip freeze &gt; requirements.txt</code>. So next time you just need to run <code>pip install -r requirements.txt</code> to install all the dependencies at once. And if you are using git, you can put a <code>venv</code> item in <code>.gitignore</code> to prevent git tracking the unnecessary dependencies.</li>
 </ol>
-<h2 id="Start-a-Django-project-and-collect-the-static-and-media-files"><a href="#Start-a-Django-project-and-collect-the-static-and-media-files" class="headerlink" title="Start a Django project and collect the static and media files"></a>Start a Django project and collect the static and media files</h2><p>nginx needs to known where the static files (e.g., images, js scripts, etc.) locate, and we need configure to Django.</p>
+<h2 id="Start-a-Django-project-and-collect-the-static-and-media-files"><a href="#Start-a-Django-project-and-collect-the-static-and-media-files" class="headerlink" title="Start a Django project and collect the static and media files"></a>Start a Django project and collect the static and media files</h2><p>nginx needs to know where the static files (e.g., images, js scripts, etc.) locate, and we need configure to Django.</p>
 <ol>
 <li>Start a Django project: <code>django-admin.py startproject mysite</code></li>
 <li><p><code>vim</code> or editor <code>mysite/settings.py</code>, add the following configurations:</p>
