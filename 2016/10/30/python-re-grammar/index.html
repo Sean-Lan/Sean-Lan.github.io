@@ -1,0 +1,355 @@
+<!DOCTYPE html><html lang="zh-CN,en,default"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="A legendary army."><title>Python re Grammar Guide | Crusade</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/4.1.1/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.2/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Python re Grammar Guide</h1><a id="logo" href="/.">Crusade</a><p class="description">For honor!</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Python re Grammar Guide</h1><div class="post-meta">Oct 30, 2016<script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> Hits</span></span></div><a data-thread-key="2016/10/30/python-re-grammar/" href="/2016/10/30/python-re-grammar/#comments" class="ds-thread-count"></a><div class="post-content"><p>In previous post introduces some common usage of <code>re</code> module, and this post will detail the grammar. After walking through this post, you can write regular expressions to obtain all the comments in <code>/* coments */</code>, get the local part and domain part of an e-mail, filter out e-mail addresses by some criteria, and etc.</p>
+<p>This post will cover the follow python <code>re</code> grammar:</p>
+<ol>
+<li>repetition</li>
+<li>character set</li>
+<li>anchoring</li>
+<li>group</li>
+<li>search options</li>
+<li>look ahead and behind assertion</li>
+<li>self referecing</li>
+</ol>
+<p>You may encounter some difficulty walking through this post in order since all the syntaxes are relevant and convoluted. So the best suggestion is skipping the part you could understand now, and come back to it later after learning other parts.</p>
+<h2 id="Repetition"><a href="#Repetition" class="headerlink" title="Repetition"></a>Repetition</h2><p>It’s very common in <code>re</code> to match pattern showing one or more times, and that’s what the <em>repetition</em> do. There are five repetition expression:</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>repeat zero or more times</td>
+<td><code>ab*</code>: <code>a</code> followed by zero or more <code>b</code></td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>repeat one or more times</td>
+<td><code>ab+</code>: <code>a</code> followed by one or more <code>b</code></td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>repeat zero or one time</td>
+<td><code>ab?</code>: <code>a</code> followed by zero or one <code>b</code></td>
+</tr>
+<tr>
+<td><code>{m}</code></td>
+<td>repeat <code>m</code> times</td>
+<td><code>ab{3}</code>: <code>a</code> followed by three <code>b</code></td>
+</tr>
+<tr>
+<td><code>{m,n}</code></td>
+<td>repeat <code>m</code> to <code>n</code> times</td>
+<td><code>ab{2,5}</code>: <code>a</code> followed by two to five <code>b</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Greedy-vs-Non-Greedy"><a href="#Greedy-vs-Non-Greedy" class="headerlink" title="Greedy vs. Non-Greedy"></a>Greedy vs. Non-Greedy</h3><p>The default matching process is <em>greedy</em>, which consumes as much input as possible. For example, when using <code>ab+</code> to match <code>abbb</code>, the result is <code>abbb</code>. We can turn off greedy mode by appending a <code>?</code> mark after the repetition expression: Use <code>ab+?c</code> to match <code>abbb</code>, the result will be <code>ab</code>.</p>
+<p>Here is another example:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = <span class="string">'Good Good Good Good Good'</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">r'(Good\s*)&#123;2,5&#125;'</span></span><br><span class="line">pattern_non_greedy = <span class="string">r'(Good\s*)&#123;2,5&#125;?'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'Greedy:'</span></span><br><span class="line"><span class="keyword">print</span> re.search(pattern, s).group(<span class="number">0</span>)</span><br><span class="line"><span class="keyword">print</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'Non-Greedy:'</span></span><br><span class="line"><span class="keyword">print</span> re.search(pattern_non_greedy, s).group(<span class="number">0</span>)</span><br><span class="line"><span class="keyword">print</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Greedy:</span><br><span class="line">Good Good Good Good Good</span><br><span class="line"></span><br><span class="line">Non-Greedy:</span><br><span class="line">Good Good</span><br></pre></td></tr></table></figure>
+<h2 id="Character-Set"><a href="#Character-Set" class="headerlink" title="Character Set"></a>Character Set</h2><p>Sometimes, we want to match one of a group of characters, and that’s the <em>character set</em>. For example, <code>[abc]</code> will match <code>a</code>, <code>b</code> or <code>c</code>. Usually, character set is used together with repetition expression, e.g: <code>[ab]+</code> will match string comprised of one or more <code>a</code> and <code>b</code>.</p>
+<p>Adding a <code>^</code> mark at the beginning of a character set excludes all charaters in the set, which means match any character not in the set. For example, <code>[^abc]+</code> will match <code>google</code> rather than <code>apple</code>.</p>
+<p>When there are too many characters in a character set and many of them are coninuous, a <code>character range</code> may help you save time key strokes. The following table shows some common character ranges:</p>
+<table>
+<thead>
+<tr>
+<th>Character Range</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[0-9]</code></td>
+<td>all number digits</td>
+</tr>
+<tr>
+<td><code>[a-z]</code></td>
+<td>all lower case letters</td>
+</tr>
+<tr>
+<td><code>[A-Z]</code></td>
+<td>all upper case letters</td>
+</tr>
+<tr>
+<td><code>[a-zA-Z]</code></td>
+<td>all lower and upper case letters</td>
+</tr>
+<tr>
+<td><code>[a-zA-Z0-9]</code></td>
+<td>the alphanumeric</td>
+</tr>
+</tbody>
+</table>
+<p>Based on your demand, you can set the start and end of your range and the range match any charater falls into it. For example: <code>[2-4]</code> will only match <code>2</code>, <code>3</code> and <code>4</code>.</p>
+<p>Dot (<code>.</code>) is a very special character which represents a character set matching any single character except <code>\n</code>. There is a <code>.</code> related flag <code>DOTALL</code>, with this flag, <code>.</code> can match <code>\n</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">s = <span class="string">'abc\t\n0980879'</span></span><br><span class="line">match_iter = re.finditer(<span class="string">r'.+'</span>, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'Without DOTALL:'</span></span><br><span class="line"><span class="keyword">for</span> m <span class="keyword">in</span> match_iter:</span><br><span class="line">    <span class="keyword">print</span> repr(s[m.start() : m.end()])</span><br><span class="line"><span class="keyword">print</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">'With DOTALL:'</span></span><br><span class="line">match_iter2 = re.finditer(<span class="string">r'.+'</span>, s, re.DOTALL)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> m <span class="keyword">in</span> match_iter2:</span><br><span class="line">    <span class="keyword">print</span> repr(s[m.start() : m.end()])</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Without DOTALL:</span><br><span class="line">&apos;abc\t&apos;</span><br><span class="line">&apos;0980879&apos;</span><br><span class="line"></span><br><span class="line">With DOTALL:</span><br><span class="line">&apos;abc\t\n0980879&apos;</span><br></pre></td></tr></table></figure>
+<p>Some character sets can be used with <em>escape codes</em>, which is more compact:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Character Set</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\d</code></td>
+<td><code>[0-9]</code></td>
+<td>a digit</td>
+</tr>
+<tr>
+<td><code>\D</code></td>
+<td><code>[^0-9]</code></td>
+<td>a non-digit</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td><code>[\t\n ]</code> (and some not common whitespace characters)</td>
+<td>whitespace</td>
+</tr>
+<tr>
+<td><code>\S</code></td>
+<td><code>[^\t\n ]</code></td>
+<td>non-whitespace</td>
+</tr>
+<tr>
+<td><code>\w</code></td>
+<td><code>[a-zA-Z0-9]</code></td>
+<td>alphanumeric</td>
+</tr>
+<tr>
+<td><code>\W</code></td>
+<td><code>[^a-zA-Z0-9]</code></td>
+<td>non-alphanumeric</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">s = <span class="string">'abc \t\n\t  0980879'</span></span><br><span class="line">match_iter = re.finditer(<span class="string">r'[\s]+'</span>, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> m <span class="keyword">in</span> match_iter:</span><br><span class="line">    <span class="keyword">print</span> repr(s[m.start() : m.end()])</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&apos; \t\n\t  &apos;</span><br></pre></td></tr></table></figure>
+<h2 id="Anchoring"><a href="#Anchoring" class="headerlink" title="Anchoring"></a>Anchoring</h2><p>It’s very common that you would like the match begin at some specific position, the <em>anchoring instructions</em> can help you do that:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>^</code></td>
+<td>start of string, or line.</td>
+</tr>
+<tr>
+<td><code>$</code></td>
+<td>end of string, or line.</td>
+</tr>
+<tr>
+<td><code>\A</code></td>
+<td>start of string.</td>
+</tr>
+<tr>
+<td><code>\Z</code></td>
+<td>end of string.</td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>empty string at the beginning or end of a word</td>
+</tr>
+<tr>
+<td><code>\B</code></td>
+<td>empty string not at the beginning or end of a word</td>
+</tr>
+</tbody>
+</table>
+<p><code>\b</code> and <code>\B</code> is hard to distinguish, let’s see an example to make things more clear:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">s = <span class="string">'123456789'</span></span><br><span class="line">b_pattern = <span class="string">r'\b\d+\b'</span></span><br><span class="line">B_pattern = <span class="string">r'\B\d+\B'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> pattern <span class="keyword">in</span> [b_pattern, B_pattern]:</span><br><span class="line">    <span class="keyword">print</span> pattern,</span><br><span class="line">    m = re.search(pattern, s)</span><br><span class="line">    <span class="keyword">if</span> m: <span class="keyword">print</span> repr(s[m.start() : m.end()])</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">\b\d+\b &apos;123456789&apos;</span><br><span class="line">\B\d+\B &apos;2345678&apos;</span><br></pre></td></tr></table></figure>
+<p>In the above example, <code>\b\d+\b</code> matches all the digits since they start from the beginning and ends at the end; <code>\B\d+\B</code> matches only the <em>inner</em> part because <code>\B</code> is somewhere in the word.</p>
+<h2 id="Group"><a href="#Group" class="headerlink" title="Group"></a>Group</h2><p>If you care about some parts of the search result, the <em>group</em> syntax can help. A group can be created by wrapping the part into parethesis (<code>()</code>), and you can retrieve the group either by <code>MatchObject</code> instance’s <code>groups()</code> method or <code>group()</code> method:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = <span class="string">'Sean &lt;sean.lan.thu@gmail.com&gt;'</span></span><br><span class="line">pattern = <span class="string">r'(\w+)\s+&lt;(.+)&gt;'</span></span><br><span class="line"></span><br><span class="line">m = re.search(pattern, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> m.groups()</span><br><span class="line"><span class="keyword">print</span> m.group(<span class="number">1</span>), m.group(<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(&apos;Sean&apos;, &apos;sean.lan.thu@gmail.com&apos;)</span><br><span class="line">Sean sean.lan.thu@gmail.com</span><br></pre></td></tr></table></figure>
+<p>The groups are ordered by the left parenthesis and start from 1. Group 0 is the whole match. If the group doesn’t find a match, <code>None</code> object will be used as the result:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># e-mail address may be wrapped by &lt;&gt; or ""</span></span><br><span class="line">s = <span class="string">'Sean "sean.lan.thu@gmail.com"'</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">r'(\w+)\s+((&lt;.+&gt;)|(".+"))'</span></span><br><span class="line"></span><br><span class="line">m = re.search(pattern, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> m.groups()</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(&apos;Sean&apos;, &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;, None, &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;)</span><br></pre></td></tr></table></figure>
+<p>The follow table gives the mapping between group index, pattern and match:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Group Index</th>
+<th>Pattern</th>
+<th>Match</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>1</code></td>
+<td><code>(\w+)</code></td>
+<td><code>Sean</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>2</code></td>
+<td><code>((&lt;.+&gt;)&#124;(“.+”))</code></td>
+<td><code>&quot;sean.lan.thu@gmail.com&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>3</code></td>
+<td><code>(&lt;.+&gt;)</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>4</code></td>
+<td><code>(&quot;.+&quot;)</code></td>
+<td><code>&quot;sean.lan.thu@gmail.com&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Named-Group"><a href="#Named-Group" class="headerlink" title="Named Group"></a>Named Group</h3><p><code>re</code> module also supports <em>named group</em>, with which you can give each group a name. The syntax of nameed group is <code>(?P&lt;name&gt;pattern)</code>. Still using the name and e-mail matching example, you can used named group to make the pattern more readable.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># e-mail address may be wrapped by &lt;&gt; or ""</span></span><br><span class="line">s = <span class="string">'Sean "sean.lan.thu@gmail.com"'</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">r'(?P&lt;name&gt;\w+)\s+(?P&lt;email&gt;(&lt;.+&gt;)|(".+"))'</span></span><br><span class="line"></span><br><span class="line">m = re.search(pattern, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> m.groups()</span><br><span class="line"><span class="keyword">print</span> m.groupdict()</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(&apos;Sean&apos;, &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;, None, &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;)</span><br><span class="line">&#123;&apos;name&apos;: &apos;Sean&apos;, &apos;email&apos;: &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;&#125;</span><br></pre></td></tr></table></figure>
+<p>It’s clearer to use named groups than ordinary groups since we can know each part is all about from the names.</p>
+<h3 id="Non-capture-Group"><a href="#Non-capture-Group" class="headerlink" title="Non-capture Group"></a>Non-capture Group</h3><p>Sometimes you just want to group someting to use the repetition expression and do not want it shown in the group results. In this case, a non-capture group can help. It’s syntax is <code>(?:pattern)</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># e-mail address may be wrapped by &lt;&gt; or ""</span></span><br><span class="line">s = <span class="string">'Sean "sean.lan.thu@gmail.com"'</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">r'(?P&lt;name&gt;\w+)\s+(?P&lt;email&gt;(?:&lt;.+&gt;)|(?:".+"))'</span></span><br><span class="line"></span><br><span class="line">m = re.search(pattern, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> m.groups()</span><br><span class="line"><span class="keyword">print</span> m.groupdict()</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(&apos;Sean&apos;, &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;)</span><br><span class="line">&#123;&apos;name&apos;: &apos;Sean&apos;, &apos;email&apos;: &apos;&quot;sean.lan.thu@gmail.com&quot;&apos;&#125;</span><br></pre></td></tr></table></figure>
+<p>You can see that <code>(&lt;.+&gt;)</code> and <code>(&quot;.+&quot;)</code> are no longer in the group set after changing them into non-capture groups.</p>
+<p>If you care about angle brackets or quotes, here is a more complex version using look ahead and behind assertions, which I’ll detail later. If you find this example too complicated for you now, just skip it and visit it back after you have learned the assertion syntax:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># e-mail address may be wrapped by &lt;&gt; or ""</span></span><br><span class="line">s = <span class="string">'Sean "sean.lan.thu@gmail.com"'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""(?x)           # verbose mode</span><br><span class="line">    (?P&lt;name&gt;\w+)      # user name part</span><br><span class="line">    \s+</span><br><span class="line">    [&lt;"]</span><br><span class="line">    (?P&lt;email&gt;         # email address part</span><br><span class="line">	(?&lt;=&lt;)(?:[\w.-]+)@(?:[\w.-]+)(?=&gt;) # wrapped by &lt;&gt;</span><br><span class="line">	|</span><br><span class="line">	(?&lt;=")(?:[\w.-]+)@(?:[\w.-]+)(?=") # wrapped by ""</span><br><span class="line">    )</span><br><span class="line">    [&gt;"]</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line">m = re.search(pattern, s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> m.groups()</span><br><span class="line"><span class="keyword">print</span> m.groupdict()</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(&apos;Sean&apos;, &apos;sean.lan.thu@gmail.com&apos;)</span><br><span class="line">&#123;&apos;name&apos;: &apos;Sean&apos;, &apos;email&apos;: &apos;sean.lan.thu@gmail.com&apos;&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Search-Options"><a href="#Search-Options" class="headerlink" title="Search Options"></a>Search Options</h2><p>The search options are also a part of the <code>re</code> grammar, they change search behavior. <code>re</code> module function has a named parameter <code>flags</code>, you can use <code>|</code> operation to set mutiple flags at the same time. Also, you can add flag abbreviations at the beginning of the pattern using the syntax <code>(?flags)</code>. The following table shows the flags and their abbreviation.</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Abbreviation</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IGNORECASE</code></td>
+<td><code>i</code></td>
+<td>Let the search be case in-sensitive.</td>
+</tr>
+<tr>
+<td><code>MULTILINE</code></td>
+<td><code>m</code></td>
+<td>Let <code>^</code> and <code>$</code> match the begin and end of each line.</td>
+</tr>
+<tr>
+<td><code>DOTALL</code></td>
+<td><code>s</code></td>
+<td>Let <code>.</code> match <code>\n</code>.</td>
+</tr>
+<tr>
+<td><code>UNICODE</code></td>
+<td><code>u</code></td>
+<td>Add unicode support.</td>
+</tr>
+<tr>
+<td><code>VERBOSE</code></td>
+<td><code>x</code></td>
+<td>Ignore white spaces and comments in the pattern.</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s see a simple example using <code>MULTILINE</code> and <code>IGNORECASE</code> flag:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = <span class="string">"""This is the first paragraph.</span><br><span class="line">This is the second.</span><br><span class="line">This is the third.</span><br><span class="line">"""</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(<span class="string">r'^this'</span>, s, flags=re.MULTILINE|re.IGNORECASE)</span><br><span class="line"><span class="keyword">print</span> re.findall(<span class="string">r'(?im)^this'</span>, s)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[&apos;This&apos;, &apos;This&apos;, &apos;This&apos;]</span><br><span class="line">[&apos;This&apos;, &apos;This&apos;, &apos;This&apos;]</span><br></pre></td></tr></table></figure>
+<p>The <code>DOTALL</code> flag has been discussed in previous section, here we just skip it. The <code>UNICODE</code> flag is help when you deal with unicode string. Without this flag, <code>\w</code> will not match some Chinese characters, and it will match them if <code>UNICODE</code> flag is used:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">motto = <span class="string">u"自强不息 厚德载物"</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">r'(\w+)\s+(\w+)'</span></span><br><span class="line">pattern_u = <span class="string">r'(?u)(\w+)\s+(\w+)'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> pattern</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, motto)</span><br><span class="line"><span class="keyword">print</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> pattern_u</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern_u, motto)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(\w+)\s+(\w+)</span><br><span class="line">[]</span><br><span class="line"></span><br><span class="line">(?u)(\w+)\s+(\w+)</span><br><span class="line">[(u&apos;\u81ea\u5f3a\u4e0d\u606f&apos;, u&apos;\u539a\u5fb7\u8f7d\u7269&apos;)]</span><br></pre></td></tr></table></figure>
+<p>When your regular expression is very complicated, it’s very helpful to use the <code>VERBOSE</code> flag to add some comments:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = <span class="string">'Sean &lt;sean.lan.thu@gmail.com&gt;'</span></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""</span><br><span class="line">    (\w+)        # user name</span><br><span class="line">    \s+</span><br><span class="line">    &lt;([\w.-]+)   # local part of the e-mail address</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)    # domain part of the e-mail address</span><br><span class="line">    &gt;</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s, flags=re.VERBOSE)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;Sean&apos;, &apos;sean.lan.thu&apos;, &apos;gmail.com&apos;)]</span><br></pre></td></tr></table></figure>
+<h2 id="Look-Ahead-and-Look-Behind"><a href="#Look-Ahead-and-Look-Behind" class="headerlink" title="Look Ahead and Look Behind"></a>Look Ahead and Look Behind</h2><p><code>re</code> has another powerful feature named <em>look ahead assertion</em>, it enables you to “look ahead” at the string to see whether it matches or not. The look ahead assertion doesn’t consume any input, and if it fails, the search will end.</p>
+<p>The positive look ahead assertion’s syntax is <code>(?=pattern)</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'Sean sean.lan.thu@gmail.com'</span></span><br><span class="line">s2 = <span class="string">'Sean &lt;sean.lan.thu@gmail.com&gt;'</span></span><br><span class="line">s3 = <span class="string">'Sean "sean.lan.thu@gmail.com"'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""(?x)      # verbose mode</span><br><span class="line">    (\w+)        # user name</span><br><span class="line">    \s+</span><br><span class="line">    (?=&lt;[\w.-]+@[\w.-]+&gt; | # only email wrapped with &lt;&gt;</span><br><span class="line">	[\w.-]+@[\w.-]+)   # or not wrapped with any thing is valid</span><br><span class="line">    &lt;?</span><br><span class="line">    ([\w.-]+)    # local part of the e-mail address</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)    # domain part of the e-mail address</span><br><span class="line">    &gt;?</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s1)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s2)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s3) <span class="comment"># won't match</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;Sean&apos;, &apos;sean.lan.thu&apos;, &apos;gmail.com&apos;)]</span><br><span class="line">[(&apos;Sean&apos;, &apos;sean.lan.thu&apos;, &apos;gmail.com&apos;)]</span><br><span class="line">[]</span><br></pre></td></tr></table></figure>
+<p>The negative look ahead assertion’s syntax is <code>(?!pattern)</code>. The match will go on only if pattern in the negative look ahead assertion not find any match.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'somebody@somecompany.com'</span></span><br><span class="line">s2 = <span class="string">'somebody@unknown.com'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""(?x)      # verbose mode</span><br><span class="line">    (?![\w.-]+@unknown\.com)  # filter out e-mails sent from unknown.com</span><br><span class="line">    ([\w.-]+)     # local part of the e-mail address</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)     # domain part of the e-mail address</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s1)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s2) <span class="comment"># won't match</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;somebody&apos;, &apos;somecompany.com&apos;)]</span><br><span class="line">[]</span><br></pre></td></tr></table></figure>
+<p>The above example can also be written using <em>negative look behind assertion</em>, whose syntax is <code>(?&lt;!pattern)</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'somebody@somecompany.com'</span></span><br><span class="line">s2 = <span class="string">'somebody@unknown.com'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""(?x)      # verbose mode</span><br><span class="line">    ([\w.-]+)     # local part of the e-mail address</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)$    # domain part of the e-mail address</span><br><span class="line">    (?&lt;!unknown\.com)  # filter out e-mails sent from unknown.com</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s1)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s2) <span class="comment"># won't match</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;somebody&apos;, &apos;somecompany.com&apos;)]</span><br><span class="line">[]</span><br></pre></td></tr></table></figure>
+<p>Different from look ahead assertion, there is one requirement for look behind assertion that its pattern must be of fixed width, which means no wildcard or range repetition is allowed. For example, <code>(?&lt;!apple{2})</code> is ok but <code>(?&lt;!apple{2,3})</code> is not.</p>
+<p>The syntax of positive look behind assertion is <code>(?&lt;=pattern)</code>, and the following example only matches gmail e-mail addresses:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'somebody@gmail.com'</span></span><br><span class="line">s2 = <span class="string">'somebody@unknown.com'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""(?x)         # verbose mode</span><br><span class="line">    ([\w.-]+)        # local part of the e-mail address</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)$       # domain part of the e-mail address</span><br><span class="line">    (?&lt;=gmail\.com)  # filter out e-mails not sent from gmail.com</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s1)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s2) <span class="comment"># won't match</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;somebody&apos;, &apos;gmail.com&apos;)]</span><br><span class="line">[]</span><br></pre></td></tr></table></figure>
+<p>Here is a more complicated example using look after and bind assertion. The trick is that these kinds of assertion don’t consume any input text and can be used as anchor.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = \</span><br><span class="line">    <span class="string">r"""</span><br><span class="line">    /*</span><br><span class="line">      head comments</span><br><span class="line">    */</span><br><span class="line">    sample code</span><br><span class="line">    /*</span><br><span class="line">     tail comments</span><br><span class="line">     */'</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line">re.findall(</span><br><span class="line">    <span class="string">r"""(?xs)   # verbose mode, dotall</span><br><span class="line">    /\*</span><br><span class="line">    (?&lt;=/\*)    # look behind to see if match is '/*'</span><br><span class="line">    (.*?)       # non-greedy mode to not skip '*/' in the middle</span><br><span class="line">    (?=\*/)     # look ahead to see if match is '*/'</span><br><span class="line">    \*/</span><br><span class="line">    """</span>, s)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&apos; \n      head comments\n    &apos;, &apos; \n     tail comments \n     &apos;]</span><br></pre></td></tr></table></figure>
+<p>In the above example, since <code>.*</code> can also match <code>/*</code> and <code>*/</code>, so the <code>/\*</code> and <code>\*/</code> in the pattern can be ommitted:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = \</span><br><span class="line">    <span class="string">r"""</span><br><span class="line">    /*</span><br><span class="line">      head comments</span><br><span class="line">    */</span><br><span class="line">    sample code</span><br><span class="line">    /*</span><br><span class="line">     tail comments</span><br><span class="line">     */'</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line">re.findall(</span><br><span class="line">    <span class="string">r"""(?xs)   # verbose mode, dotall</span><br><span class="line">    (?&lt;=/\*)    # look behind to see if match is '/*'</span><br><span class="line">    (.*?)       # non-greedy mode to not skip '*/' in the middle</span><br><span class="line">    (?=\*/)     # look ahead to see if match is '*/'</span><br><span class="line">    """</span>, s)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&apos; \n      head comments\n    &apos;, &apos; \n     tail comments \n     &apos;]</span><br></pre></td></tr></table></figure>
+<h2 id="Self-referencing"><a href="#Self-referencing" class="headerlink" title="Self-referencing"></a>Self-referencing</h2><p><code>re</code> also allows you to use the group  previously capured later with self-referencing syntax <code>\num</code>, where <code>num</code> is the group index start from <code>1</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'Sean sean@gmail.com'</span></span><br><span class="line">s2 = <span class="string">'Sean somebody@gmail.com'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">   <span class="string">r"""(?ix)     # verbose mode, ignore case</span><br><span class="line">    (\w+)        # user name</span><br><span class="line">    \s+</span><br><span class="line">    \1           # local part must be the same with the user name</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)$   # domain part of the e-mail address</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s1)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s2) <span class="comment"># won't match</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;Sean&apos;, &apos;gmail.com&apos;)]</span><br><span class="line">[]</span><br></pre></td></tr></table></figure>
+<p>You can also reference a named group by <code>(?P=name)</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'Sean sean@gmail.com'</span></span><br><span class="line">s2 = <span class="string">'Sean somebody@gmail.com'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">   <span class="string">r"""(?ix)          # verbose mode, ignore case</span><br><span class="line">    (?P&lt;name&gt;\w+)     # user name</span><br><span class="line">    \s+</span><br><span class="line">    (?P=name)         # local part must be the same with the user name</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)$        # domain part of the e-mail address</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s1)</span><br><span class="line"><span class="keyword">print</span> re.findall(pattern, s2) <span class="comment"># won't match</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[(&apos;Sean&apos;, &apos;gmail.com&apos;)]</span><br><span class="line">[]</span><br></pre></td></tr></table></figure>
+<p>In <code>re.sub()</code> and <code>re.subn()</code>, you can reference a group in <code>repl</code> parameter by <code>\g&lt;name&gt;</code> if it’s named or <code>\g&lt;num&gt;</code> if not :</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = <span class="string">'sean@gmail.com'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> re.sub(pattern=<span class="string">r'(?P&lt;local&gt;[\w.-]+)@([\w.-]+)'</span>,</span><br><span class="line">	     repl=<span class="string">r'\g&lt;local&gt; at \g&lt;2&gt;'</span>,</span><br><span class="line">	     string=s)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sean at gmail.com</span><br></pre></td></tr></table></figure>
+<p>In <code>MatchObject.expand()</code> method, you can also reference a group in <code>template</code> paremeter by <code>\g&lt;name&gt;</code> or <code>\g&lt;num&gt;</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s = <span class="string">'sean@gmail.com'</span></span><br><span class="line"></span><br><span class="line">m = re.search(pattern=<span class="string">r'(?P&lt;local&gt;[\w.-]+)@([\w.-]+)'</span>, string=s)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> m:</span><br><span class="line">    <span class="keyword">print</span> m.expand(<span class="string">r'\g&lt;local&gt; at \g&lt;2&gt;'</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sean at gmail.com</span><br></pre></td></tr></table></figure>
+<p>You can also use self-referencing for conditional match: <code>(?(id)true-pattern|false-pattern)</code>, where <code>id</code> is the group name or number, <code>true-pattern</code> is the pattern to use if the group finds a match and <code>false-pattern</code> is the pattern to use otherwise. The <code>false-pattern</code> is optional:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">s1 = <span class="string">'&lt;sean@gmail.com&gt;'</span></span><br><span class="line">s2 = <span class="string">'sean@gmail.com'</span></span><br><span class="line">s3 = <span class="string">'&lt;sean@gmail.com'</span></span><br><span class="line"></span><br><span class="line">pattern = \</span><br><span class="line">    <span class="string">r"""(?x)       # verbose mode</span><br><span class="line">    ^</span><br><span class="line">    (?P&lt;angle_bracket&gt;&lt;)?</span><br><span class="line">    ([\w.-]+)              # local part must be the same with the user name</span><br><span class="line">    @</span><br><span class="line">    ([\w.-]+)              # domain part of the e-mail address</span><br><span class="line">    (?(angle_bracket)      # if it has left angle bracket</span><br><span class="line">    &gt;                      # it must has a right angle bracket</span><br><span class="line">    )</span><br><span class="line">    """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> s <span class="keyword">in</span> [s1, s2, s3]:</span><br><span class="line">    m = re.search(pattern, s)</span><br><span class="line">    <span class="keyword">print</span> s,</span><br><span class="line">    <span class="keyword">if</span> m:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Valid"</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">'Not Valid'</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;sean@gmail.com&gt; Valid</span><br><span class="line">sean@gmail.com Valid</span><br><span class="line">&lt;sean@gmail.com Not Valid</span><br></pre></td></tr></table></figure>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This post details the python’s <code>re</code> grammar, and the following list is a short recap:</p>
+<ul>
+<li>repetition<ul>
+<li><code>*</code>, <code>+</code>, <code>?</code>, <code>{m}</code>, <code>{m,n}</code></li>
+<li>greedy vs. non-greedy(<code>?</code>)</li>
+</ul>
+</li>
+<li>character set<ul>
+<li><code>[abc]</code></li>
+<li>character range: <code>[a-b]</code></li>
+<li>escape code: <code>\d</code>, etc.</li>
+</ul>
+</li>
+<li>anchoring: <code>^</code>, <code>$</code>, <code>\A</code>, <code>\Z</code>, <code>\b</code>, <code>\B</code></li>
+<li>group: <code>()</code><ul>
+<li>named group: <code>(?P&lt;name&gt;pattern)</code></li>
+<li>no-capture group: <code>(?:pattern)</code></li>
+</ul>
+</li>
+<li>search options: <code>i</code>, <code>m</code>, <code>s</code>, <code>u</code>, <code>x</code></li>
+<li>look ahead and behind assertion<ul>
+<li>positive look ahead: <code>(?=pattern)</code></li>
+<li>negative look ahead: <code>(?!pattern)</code></li>
+<li>positive look behind: <code>(?&lt;=pattern)</code></li>
+<li>negative look behind: <code>(?&lt;!pattern)</code></li>
+</ul>
+</li>
+<li>self referecing<ul>
+<li><code>\num</code>, <code>(?P=name)</code></li>
+<li><code>\g&lt;num&gt;</code>, <code>\g&lt;name&gt;</code></li>
+</ul>
+</li>
+</ul>
+<p>There are usualy more than one regular expressions to sovle the same problem, and they differ in length, readability and efficiency. Lots of practice is needed before writing beautiful, efficient and extensible regular expressions. After walking through this post, you should try to figure out the details about how regular expressions are compiled and work, and the best way to implement a <code>re</code> engine by yourself.</p>
+<p>You can download the jupyter notebook version from <a href="re-grammar.ipynb">here</a>.</p>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://www.sean-lan.com/2016/10/30/python-re-grammar/" data-id="ciuwozll6000bh1unb2i42xbr" class="article-share-link">分享到</a><div class="tags"><a href="/tags/Python/">Python</a></div><div class="post-nav"><a href="/2016/10/25/python-re-quick-guide/" class="next">Quick Guide to Python re module</a></div><div data-thread-key="2016/10/30/python-re-grammar/" data-title="Python re Grammar Guide" data-url="http://www.sean-lan.com/2016/10/30/python-re-grammar/" class="ds-share flat"><div class="ds-share-inline"><ul class="ds-share-icons-16"><li data-toggle="ds-share-icons-more"><a href="javascript:void(0);" class="ds-more">分享到：</a></li><li><a href="javascript:void(0);" data-service="weibo" class="ds-weibo">微博</a></li><li><a href="javascript:void(0);" data-service="qzone" class="ds-qzone">QQ空间</a></li><li><a href="javascript:void(0);" data-service="qqt" class="ds-qqt">腾讯微博</a></li><li><a href="javascript:void(0);" data-service="wechat" class="ds-wechat">微信</a></li></ul><div class="ds-share-icons-more"></div></div></div><div data-thread-key="2016/10/30/python-re-grammar/" data-title="Python re Grammar Guide" data-url="http://www.sean-lan.com/2016/10/30/python-re-grammar/" data-author-key="1" class="ds-thread"></div></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://www.sean-lan.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Back-End/">Back End</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Front-End/">Front End</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile-Application/">Mobile Application</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/Android/" style="font-size: 15px;">Android</a> <a href="/tags/CSS/" style="font-size: 15px;">CSS</a> <a href="/tags/JavaScript/" style="font-size: 15px;">JavaScript</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/Django/" style="font-size: 15px;">Django</a> <a href="/tags/React/" style="font-size: 15px;">React</a> <a href="/tags/webpack/" style="font-size: 15px;">webpack</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/10/30/python-re-grammar/">Python re Grammar Guide</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/25/python-re-quick-guide/">Quick Guide to Python re module</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/24/customize-browser-back-and-forward-button-behaviour/">Customize Browser Back and Forward Button Behavior</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/15/django-uwsgi-nginx/">Deploy Django Project in nginx with uWSGI on Mac OS X</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/12/jupyter-notebook-set-up/">Setting Up Jupyter Notebook with JavaScript, Python2 and Python3 Support</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/08/29/ways-to-horizontal-and-vertical-center/">Ways to Horizontally and Vertically Center Child Elements in Parent</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/08/28/ways-to-vertical-center/">Ways to Vertically Center Child Elements in Parent</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/08/27/ways-to-horizontal-center/">Ways to Horizontally Center Child Elements in Parent</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/07/04/android-permissions/">Working with Android System Permissions</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/06/21/react-project-template-using-webpack/">React Template Project Using webpack</a></li></ul></div><div class="widget"><div class="comments-title"><i class="fa fa-comment-o"> 最近评论</i></div><div data-num-items="5" data-show-avatars="0" data-show-time="1" data-show-admin="0" data-excerpt-length="32" data-show-title="1" class="ds-recent-comments"></div></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.shinexu.com/" title="Vesion" target="_blank">Vesion</a><ul></ul><a href="http://rationaldesign.studio/" title="Rational Design" target="_blank">Rational Design</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">© <a href="/." rel="nofollow">Crusade.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="/css/jquery.fancybox.css?v=0.0.0"><script>var duoshuoQuery = {short_name:'stupidsean'};
+(function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?7a1d7b5bb01512fff50895f7b6558c95";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+</script><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
